@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="ChromeKit",
+    name="chromekit",
     version="1.1.0",
     author="Michael DiNunzio",
     author_email="mdinunzio@gmail.com",
