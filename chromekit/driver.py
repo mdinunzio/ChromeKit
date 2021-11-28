@@ -1,62 +1,47 @@
 """A simplified webdriver module.
 
 """
-import mintkit.config as cfg
-import mintkit.utils.logging
-import mintkit.utils.env
-import mintkit.web.tasks
-from selenium import webdriver
+import chromekit.config as cfg
+import chromekit.logging
+import chromekit.utils
+import selenium.webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 import sys
 
 
-# Get logger
-log = mintkit.utils.logging.get_logger(cfg.PROJECT_NAME)
+log = chromekit.logging.get_logger(cfg.PROJECT_NAME)
 
 
-class WebDriver:
+class WebDriver(selenium.webdriver.Chrome):
     def __init__(self):
-        """A tool for traversing webpages.
+        """A tool for interacting with webpages.
 
         """
-        self.profile = cfg.paths.chrome_profile
-        self.driver = None
-        mintkit.web.tasks.ensure_driver_compatibility()
-        try:
-            self.start_driver()
-        except Exception as e:
-            print(e)
-            mintkit.utils.env.taskkill('chrome')
-            self.start_driver()
+        self.executable_path = cfg.paths['executable_path']
+        self.options = selenium.webdriver.ChromeOptions()
+        self.profile = cfg.paths['profile']
+        self.options.add_argument(f"user-data-dir={self.profile}")
+        chromekit.utils.ensure_driver_compatibility()
 
-    def start_driver(self):
-        """Start the chromedriver.
-
-        """
-        options = webdriver.ChromeOptions()
-        options.add_argument(f"user-data-dir={self.profile}")
-        self.driver = webdriver.Chrome(cfg.paths.chromedriver, options=options)
-        self.driver.maximize_window()
-
-    def get(self, url):
-        """Get the requested url.
-
-        """
-        self.driver.get(url)
+    def start(self):
+        """Starts the chromedriver"""
+        super().__init__(executable_path=self.executable_path,
+                         options=self.options)
+        self.maximize_window()
 
     def await_element(self, criteria, by_type=By.CSS_SELECTOR,
-                      ec_type=EC.element_to_be_clickable, timeout=300,
+                      ec_type=ec.element_to_be_clickable, timeout=300,
                       fatal=True):
-        """Return an element on a page after it has finished rendering.
+        """Returns an element on a page after it has finished rendering.
 
         """
         try:
             wdw = WebDriverWait(self.driver, timeout)
-            ec = ec_type((by_type, criteria))
-            element = wdw.until(ec)
+            exp_cond = ec_type((by_type, criteria))
+            element = wdw.until(exp_cond)
             return element
         except TimeoutException:
             print('TimeoutException: Element not found.')
@@ -65,7 +50,7 @@ class WebDriver:
                 sys.exit(1)
 
     def find_element(self, criteria):
-        """Return an element if it exists, otherwise return None.
+        """Returns an element if it exists, otherwise return None.
 
         """
         elements = self.driver.find_elements(By.CSS_SELECTOR, criteria)
@@ -75,27 +60,16 @@ class WebDriver:
             return None
 
     def jsclick(self, element, fatal=True):
-        """Click an element using javascript
-        (avoids ElementClickInterceptedException).
+        """Clicks an element using javascript
+
+        This helps avoid the ElementClickInterceptedException.
 
         """
         try:
             js = 'arguments[0].click();'
-            self.driver.execute_script(js, element)
+            self.execute_script(js, element)
         except Exception as e:
             print(e)
             if fatal:
-                self.driver.quit()
+                self.quit()
                 sys.exit(1)
-
-    def execute_script(self, script):
-        """Execute the given script.
-
-        """
-        self.driver.execute_script(script)
-
-    def quit(self):
-        """Quit the driver.
-
-        """
-        self.driver.quit()
