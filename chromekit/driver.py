@@ -19,15 +19,22 @@ class WebDriver(selenium.webdriver.Chrome):
     def __init__(self):
         """A tool for interacting with webpages.
 
+        Attributes:
+            executable_path (string): The path to the Chromedriver exe.
+            options (ChromeOptions): The webdriver Chrome options.
+            profile (string): The path to the desired user's Chrome profile.
+
         """
-        self.executable_path = cfg.paths['executable_path']
+        self.executable_path = str(cfg.paths['executable_path'])
         self.options = selenium.webdriver.ChromeOptions()
-        self.profile = cfg.paths['profile']
-        self.options.add_argument(f"user-data-dir={self.profile}")
+        self.profile = str(cfg.paths['profile'])
         chromekit.utils.ensure_driver_compatibility()
 
     def start(self):
-        """Starts the chromedriver"""
+        """Starts the chromedriver.
+
+        """
+        self.options.add_argument(f"user-data-dir={self.profile}")
         super().__init__(executable_path=self.executable_path,
                          options=self.options)
         self.maximize_window()
