@@ -44,7 +44,7 @@ class WebDriver(selenium.webdriver.Chrome):
                          options=self.options)
         self.maximize_window()
 
-    def await_element(self, criteria, by_type=By.CSS_SELECTOR,
+    def await_element(self, css_selector, by_type=By.CSS_SELECTOR,
                       ec_type=ec.element_to_be_clickable, timeout=300,
                       fatal=False):
         """Returns an element on a page after it has finished rendering.
@@ -52,7 +52,7 @@ class WebDriver(selenium.webdriver.Chrome):
         """
         try:
             wdw = WebDriverWait(self, timeout)
-            exp_cond = ec_type((by_type, criteria))
+            exp_cond = ec_type((by_type, css_selector))
             element = wdw.until(exp_cond)
             return element
         except TimeoutException:
@@ -60,16 +60,6 @@ class WebDriver(selenium.webdriver.Chrome):
             if fatal:
                 self.quit()
                 sys.exit(1)
-
-    def find_element(self, criteria):
-        """Returns an element if it exists, otherwise return None.
-
-        """
-        elements = self.find_elements(By.CSS_SELECTOR, criteria)
-        if len(elements) > 0:
-            return elements[0]
-        else:
-            return None
 
     def jsclick(self, element, fatal=True):
         """Clicks an element using javascript
