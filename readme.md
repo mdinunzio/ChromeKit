@@ -8,7 +8,7 @@ Additionally, it adds a handful of useful commands to Selenium's API.
 
 ## Installation
 ```
-pip install git+git@github.com:mdinunzio/ChromeKit.git
+pip install git+https://github.com/mdinunzio/ChromeKit.git
 ```
 
 ## Examples
