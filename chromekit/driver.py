@@ -1,5 +1,10 @@
 """A simplified webdriver module.
 
+TODO
+    Fix logging to properly use debug and info
+    Set fatal to default to False for await_element
+    Add usage exmaples to readme
+
 """
 import chromekit.config as cfg
 import chromekit.logging
