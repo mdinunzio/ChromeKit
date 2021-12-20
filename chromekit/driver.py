@@ -3,7 +3,7 @@
 TODO
     Fix logging to properly use debug and info
     Set fatal to default to False for await_element
-    Add usage exmaples to readme
+    Add usage examples to readme
 
 """
 import chromekit.config as cfg
@@ -46,7 +46,7 @@ class WebDriver(selenium.webdriver.Chrome):
 
     def await_element(self, criteria, by_type=By.CSS_SELECTOR,
                       ec_type=ec.element_to_be_clickable, timeout=300,
-                      fatal=True):
+                      fatal=False):
         """Returns an element on a page after it has finished rendering.
 
         """
