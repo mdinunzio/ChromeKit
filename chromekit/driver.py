@@ -51,21 +51,21 @@ class WebDriver(selenium.webdriver.Chrome):
 
         """
         try:
-            wdw = WebDriverWait(self.driver, timeout)
+            wdw = WebDriverWait(self, timeout)
             exp_cond = ec_type((by_type, criteria))
             element = wdw.until(exp_cond)
             return element
         except TimeoutException:
             print('TimeoutException: Element not found.')
             if fatal:
-                self.driver.quit()
+                self.quit()
                 sys.exit(1)
 
     def find_element(self, criteria):
         """Returns an element if it exists, otherwise return None.
 
         """
-        elements = self.driver.find_elements(By.CSS_SELECTOR, criteria)
+        elements = self.find_elements(By.CSS_SELECTOR, criteria)
         if len(elements) > 0:
             return elements[0]
         else:
