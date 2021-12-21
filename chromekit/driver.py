@@ -1,10 +1,5 @@
 """A simplified webdriver module.
 
-TODO
-    Fix logging to properly use debug and info
-    Set fatal to default to False for await_element
-    Add usage examples to readme
-
 """
 import chromekit.config as cfg
 import chromekit.logging
@@ -21,7 +16,7 @@ log = chromekit.logging.get_logger(cfg.PROJECT_NAME)
 
 
 class WebDriver(selenium.webdriver.Chrome):
-    def __init__(self):
+    def __init__(self, use_default_profile=False):
         """A tool for interacting with webpages.
 
         Attributes:
@@ -33,13 +28,15 @@ class WebDriver(selenium.webdriver.Chrome):
         self.executable_path = str(cfg.paths['executable_path'])
         self.options = selenium.webdriver.ChromeOptions()
         self.profile = str(cfg.paths['profile'])
+        self.use_default_profile = use_default_profile
         chromekit.utils.ensure_driver_compatibility()
 
     def start(self):
         """Starts the chromedriver.
 
         """
-        self.options.add_argument(f"user-data-dir={self.profile}")
+        if self.use_default_profile:
+            self.options.add_argument(f"user-data-dir={self.profile}")
         super().__init__(executable_path=self.executable_path,
                          options=self.options)
         self.maximize_window()

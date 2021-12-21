@@ -84,9 +84,12 @@ def _setup_logger(logger_name):
     fl_nm += '.log'
     fl_path = os.path.join(_log_settings['logging_directory'], fl_nm)
     fl_handler = logging.FileHandler(fl_path)
-    fl_handler.setLevel(logging.INFO)
+    fl_handler.setLevel(logging.DEBUG)
     c_handler = logging.StreamHandler(sys.stdout)
-    c_handler.setLevel(logging.INFO)
+    if _log_settings['debug_mode']:
+        c_handler.setLevel(logging.DEBUG)
+    else:
+        c_handler.setLevel(logging.INFO)
 
     # Create formatters
     fl_template = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -98,9 +101,10 @@ def _setup_logger(logger_name):
 
     # Add handlers to the logger
     logger.addHandler(fl_handler)
-    logger.addHandler(c_handler)
+    if _log_settings['debug_mode']:
+        logger.addHandler(c_handler)
 
-    logger.info(f'Logger "{logger_name}" initialized.')
+    logger.debug(f'Logger "{logger_name}" initialized.')
 
     # Add to loggers
     _loggers[logger_name] = logger
