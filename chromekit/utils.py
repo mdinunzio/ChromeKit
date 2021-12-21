@@ -86,7 +86,7 @@ def download_chromedriver_zip(version=None, chunk_size=128):
         chunk_size (int): The file chunk size for extraction. Defaults to 128.
 
     """
-    log.info('Downloading Chromedriver zip file.')
+    log.debug('Downloading Chromedriver zip file.')
     if version is None:
         version = get_chrome_version().split('.')[0]
     ver_map = get_chromedriver_version_map()
@@ -102,7 +102,7 @@ def download_chromedriver_zip(version=None, chunk_size=128):
     with open(zip_path, 'wb') as file:
         for chunk in req.iter_content(chunk_size=chunk_size):
             file.write(chunk)
-    log.info('Finished downloading Chromedriver zip file.')
+    log.debug('Finished downloading Chromedriver zip file.')
     return zip_path
 
 
@@ -136,13 +136,13 @@ def extract_chromedriver_zip(zip_path):
             chromedriver executable.
 
     """
-    log.info(f'Extracting chromedriver zip: {zip_path}')
+    log.debug(f'Extracting chromedriver zip: {zip_path}')
     if not cfg.paths['chromedriver'].parent.exists():
-        log.info(f'Creating chromedriver parent directory')
+        log.debug(f'Creating chromedriver parent directory')
         cfg.paths['chromedriver'].parent.mkdir()
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(str(cfg.paths['chromedriver'].parent))
-    log.info(f'Finished extracting chromedriver.')
+    log.debug(f'Finished extracting chromedriver.')
 
 
 def setup_chromedriver():
@@ -172,13 +172,16 @@ def ensure_driver_compatibility():
     ver_comps = min(len(driver_split), len(chrome_split))
     for i in range(ver_comps):
         if driver_split[i] < chrome_split[i]:
-            log.info(f'Driver version {driver_ver} is less than '
-                     f'Chrome version {chrome_ver}. '
-                     f'Beginning Chromedriver re-installation.')
+            log.info(
+                f'Driver version {driver_ver} is less than '
+                f'Chrome version {chrome_ver}. '
+                f'Beginning Chromedriver re-installation.')
             setup_chromedriver()
         elif driver_split[i] > chrome_split[i]:
-            log.info(f'Driver version {driver_ver} is greater than '
-                     f'Chrome version {chrome_ver}. '
-                     f'No need for driver update.')
+            log.debug(
+                f'Driver version {driver_ver} is greater than '
+                f'Chrome version {chrome_ver}. '
+                f'No need for driver update.')
             return
-    log.info('Chrome version and driver version are equal.')
+    log.debug('Chrome version and driver version are equal. '
+              'No need to update.')
