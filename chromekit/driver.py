@@ -16,13 +16,21 @@ log = chromekit.logging.get_logger(cfg.PROJECT_NAME)
 
 
 class WebDriver(selenium.webdriver.Chrome):
-    def __init__(self, use_default_profile=False):
-        """A tool for interacting with webpages.
+    """A tool for interacting with webpages.
 
-        Attributes:
-            executable_path (string): The path to the Chromedriver exe.
-            options (ChromeOptions): The webdriver Chrome options.
-            profile (string): The path to the desired user's Chrome profile.
+    Attributes:
+        executable_path (string): The path to the Chromedriver exe.
+        options (ChromeOptions): The webdriver Chrome options.
+        profile (string): The path to the desired user's Chrome profile.
+
+    """
+
+    def __init__(self, use_default_profile=False):
+        """Inits the WebDriver.
+
+        Args:
+            use_default_profile (bool): If true, the default user profile will
+                be loaded, allowing for use of stored cookies etc.
 
         """
         self.executable_path = str(cfg.paths['executable_path'])
@@ -46,6 +54,21 @@ class WebDriver(selenium.webdriver.Chrome):
                       fatal=False):
         """Returns an element on a page after it has finished rendering.
 
+        Args:
+            criteria (str): The criteria defining the scope of the search.
+            by_type (selenium.webdriver.common.by.By): The type of match to
+                be performed. Defaults to By.CSS_SELECTOR.
+                For a full list of by_types see
+                selenium-python.readthedocs.io/api.html#locate-elements-by
+            ec_type (selenium.webdriver.support.expected_conditions): The
+                condition that must be met for an element to be considered
+                found. Defaults to ec.element_to_be_clickable.
+                For a full list of conditions see
+                selenium-python.readthedocs.io/waits.html.
+            timeout (int): The number of seconds after which to time out.
+            fatal (bool): If True, the driver will be killed if the element is
+                not found. Defaults to False.
+
         """
         try:
             wdw = WebDriverWait(self, timeout)
@@ -62,6 +85,12 @@ class WebDriver(selenium.webdriver.Chrome):
         """Clicks an element using javascript
 
         This helps avoid the ElementClickInterceptedException.
+
+        Args:
+            element (selenium.webdriver.remote.webelement.WebElement): The
+                element to be clicked.
+            fatal (bool): If True, the driver will be killed should an
+                exception be thrown. Defaults to True.
 
         """
         try:
