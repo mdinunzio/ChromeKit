@@ -41,15 +41,15 @@ class WebDriver(selenium.webdriver.Chrome):
                          options=self.options)
         self.maximize_window()
 
-    def await_element(self, css_selector, by_type=By.CSS_SELECTOR,
-                      ec_type=ec.element_to_be_clickable, timeout=300,
+    def await_element(self, criteria, by_type=By.CSS_SELECTOR,
+                      ec_type=ec.element_to_be_clickable, timeout=60,
                       fatal=False):
         """Returns an element on a page after it has finished rendering.
 
         """
         try:
             wdw = WebDriverWait(self, timeout)
-            exp_cond = ec_type((by_type, css_selector))
+            exp_cond = ec_type((by_type, criteria))
             element = wdw.until(exp_cond)
             return element
         except TimeoutException:
