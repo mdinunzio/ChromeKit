@@ -33,9 +33,9 @@ class WebDriver(selenium.webdriver.Chrome):
                 be loaded, allowing for use of stored cookies etc.
 
         """
-        self.executable_path = str(cfg.paths['executable_path'])
+        self.executable_path = str(cfg.PATHS['executable_path'])
         self.options = selenium.webdriver.ChromeOptions()
-        self.profile = str(cfg.paths['profile'])
+        self.profile = str(cfg.PATHS['profile'])
         self.use_default_profile = use_default_profile
         chromekit.utils.ensure_driver_compatibility()
 

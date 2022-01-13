@@ -1,30 +1,28 @@
-import logging
 import pathlib
 import os
 
 
 PROJECT_NAME = 'ChromeKit'
 
-# path setup
-paths = dict()
-paths['home'] = pathlib.Path(os.path.expanduser('~'))
-paths['downloads'] = paths['home'] / 'Downloads'
-paths['local'] = paths['home'] / r'AppData/Local'
-paths['appdata'] = paths['local'] / 'ChromeKit'
-paths['executable_path'] = (paths['appdata'] /
-                            'chromedriver_win32/chromedriver.exe')
-paths['logs'] = paths['appdata'] / 'logs'
-paths['x86'] = pathlib.Path(r"C:/Program Files (x86)")
-paths['chrome'] = paths['x86'] / r'Google/Chrome/Application/chrome.exe'
-paths['profile'] = paths['local'] / r'Google/Chrome/User Data/Default'
-paths['chromedriver'] = (paths['appdata'] /
-                         r'chromedriver_win32/chromedriver.exe')
+# Define key paths.
+PATHS = dict()
+PATHS['home'] = pathlib.Path(os.path.expanduser('~'))
+PATHS['downloads'] = PATHS['home'] / 'Downloads'
+PATHS['local'] = PATHS['home'] / r'AppData/Local'
+PATHS['appdata'] = PATHS['local'] / 'ChromeKit'
+PATHS['executable_path'] = (
+        PATHS['appdata'] / 'chromedriver_win32/chromedriver.exe')
+PATHS['logs'] = PATHS['appdata'] / 'logs'
+PATHS['x86'] = pathlib.Path(r"C:/Program Files (x86)")
+PATHS['chrome'] = PATHS['x86'] / r'Google/Chrome/Application/chrome.exe'
+PATHS['profile'] = PATHS['local'] / r'Google/Chrome/User Data/Default'
+PATHS['chromedriver'] = (
+        PATHS['appdata'] / r'chromedriver_win32/chromedriver.exe')
 
-if not paths['appdata'].exists():
-    paths['appdata'].mkdir()
-if not paths['logs'].exists():
-    paths['logs'].mkdir()
+if not PATHS['appdata'].exists():
+    PATHS['appdata'].mkdir()
+if not PATHS['logs'].exists():
+    PATHS['logs'].mkdir()
 
 # debug settings
 DEBUG = os.environ.get('CHROMEKITDEBUG') == 1
-

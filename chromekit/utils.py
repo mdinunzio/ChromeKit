@@ -49,7 +49,7 @@ def request_uac(task):
     """Runs the given task after requesting UAC permissions.
 
     """
-    params = str(cfg.paths.app + 'run.py') + f' --task {task}'
+    params = str(cfg.PATHS.app + 'run.py') + f' --task {task}'
     ctypes.windll.shell32.ShellExecuteW(
         None, "runas", sys.executable, params, None, 1)
 
@@ -97,7 +97,7 @@ def download_chromedriver_zip(version=None, chunk_size=128):
     cd_version = base_url.split('path=')[-1].strip().replace('/', '')
     dl_url = f'https://chromedriver.storage.googleapis.com/'
     dl_url += f'{cd_version}/chromedriver_win32.zip'
-    zip_path = str(cfg.paths['downloads'] / f'chromedriver_win32.zip')
+    zip_path = str(cfg.PATHS['downloads'] / f'chromedriver_win32.zip')
     req = requests.get(dl_url, stream=True)
     with open(zip_path, 'wb') as file:
         for chunk in req.iter_content(chunk_size=chunk_size):
@@ -114,9 +114,9 @@ def get_chromedriver_version(abridged=True):
             Defaults to True.
 
     """
-    if not cfg.paths['chromedriver'].exists():
+    if not cfg.PATHS['chromedriver'].exists():
         return
-    cmd = str(cfg.paths['chromedriver']) + ' --version'
+    cmd = str(cfg.PATHS['chromedriver']) + ' --version'
     res = subprocess.run(cmd, capture_output=True)
     version = res.stdout.decode('utf-8')
     if not abridged:
@@ -137,11 +137,11 @@ def extract_chromedriver_zip(zip_path):
 
     """
     log.debug(f'Extracting chromedriver zip: {zip_path}')
-    if not cfg.paths['chromedriver'].parent.exists():
+    if not cfg.PATHS['chromedriver'].parent.exists():
         log.debug(f'Creating chromedriver parent directory')
-        cfg.paths['chromedriver'].parent.mkdir()
+        cfg.PATHS['chromedriver'].parent.mkdir()
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(str(cfg.paths['chromedriver'].parent))
+        zip_ref.extractall(str(cfg.PATHS['chromedriver'].parent))
     log.debug(f'Finished extracting chromedriver.')
 
 
