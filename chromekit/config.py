@@ -1,4 +1,4 @@
-import chromekit.logging
+import logging
 import pathlib
 import os
 
@@ -28,7 +28,3 @@ if not paths['logs'].exists():
 # debug settings
 DEBUG = os.environ.get('CHROMEKITDEBUG') == 1
 
-# logging setup
-chromekit.logging.set_logging_directory(paths['logs'])
-chromekit.logging.set_debug_mode(DEBUG)
-log = chromekit.logging.get_logger(PROJECT_NAME)

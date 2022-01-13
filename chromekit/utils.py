@@ -1,5 +1,5 @@
 import chromekit.config as cfg
-import chromekit.logging
+import logging
 import requests
 import zipfile
 import subprocess
@@ -13,7 +13,7 @@ import sys
 
 CHROMEDRIVER_URL = r'https://chromedriver.chromium.org'
 
-log = chromekit.logging.get_logger(cfg.PROJECT_NAME)
+log = logging.getLogger(__name__)
 
 
 def get_username():
@@ -45,13 +45,13 @@ def get_chrome_version():
     return version
 
 
-# def request_uac(task):
-#     """Runs the given task after requesting UAC permissions.
-#
-#     """
-#     params = str(cfg.paths.app + 'run.py') + f' --task {task}'
-#     ctypes.windll.shell32.ShellExecuteW(
-#         None, "runas", sys.executable, params, None, 1)
+def request_uac(task):
+    """Runs the given task after requesting UAC permissions.
+
+    """
+    params = str(cfg.paths.app + 'run.py') + f' --task {task}'
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", sys.executable, params, None, 1)
 
 
 def get_chromedriver_version_map():

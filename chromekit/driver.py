@@ -2,17 +2,17 @@
 
 """
 import chromekit.config as cfg
-import chromekit.logging
 import chromekit.utils
 import selenium.webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
+import logging
 import sys
 
 
-log = chromekit.logging.get_logger(cfg.PROJECT_NAME)
+log = logging.getLogger(__name__)
 
 
 class WebDriver(selenium.webdriver.Chrome):
