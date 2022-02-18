@@ -86,7 +86,7 @@ def download_chromedriver_zip(version: str = None, chunk_size: int = 128
         chunk_size: The file chunk size for extraction. Defaults to 128.
 
     """
-    log.debug('Downloading Chromedriver zip file.')
+    log.info('Downloading Chromedriver zip file.')
     if version is None:
         version = get_chrome_version().split('.')[0]
     ver_map = fetch_chrome_to_chromedriver_version_map()
@@ -103,7 +103,7 @@ def download_chromedriver_zip(version: str = None, chunk_size: int = 128
     with open(zip_path, 'wb') as file:
         for chunk in req.iter_content(chunk_size=chunk_size):
             file.write(chunk)
-    log.debug('Finished downloading Chromedriver zip file.')
+    log.info('Finished downloading Chromedriver zip file.')
     return zip_path
 
 
@@ -117,14 +117,14 @@ def extract_chromedriver_zip_to_appdata(zip_path: str):
             chromedriver executable.
 
     """
-    log.debug('Extracting chromedriver zip: %s', zip_path)
+    log.info('Extracting chromedriver zip: %s', zip_path)
     if not chromekit.settings.PATHS.chromedriver.parent.exists():
-        log.debug('Creating chromedriver parent directory')
+        log.info('Creating chromedriver parent directory')
         chromekit.settings.PATHS.chromedriver.parent.mkdir()
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(
             str(chromekit.settings.PATHS.chromedriver.parent))
-    log.debug('Finished extracting chromedriver.')
+    log.info('Finished extracting chromedriver.')
 
 
 def get_chromedriver_version(abridged: bool = True) -> Optional[str]:
@@ -186,11 +186,11 @@ def update_driver(force: bool = False):
             driver_ver, chrome_ver)
         install_chromedriver()
     elif driver_ver_tuple > chrome_ver_tuple:
-        log.debug(
+        log.info(
             'Driver version %s is greater than '
             'Chrome version %s. '
             'No need for driver update.',
             driver_ver, chrome_ver)
         return
-    log.debug('Chrome version and driver version are equal. '
-              'No need to update.')
+    log.info('Chrome version and driver version are equal. '
+             'No need to update.')

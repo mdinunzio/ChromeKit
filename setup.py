@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="chromekit",
-    version="2.0.0",
+    version="2.0.1",
     author="Michael DiNunzio",
     author_email="mdinunzio@gmail.com",
     packages=['chromekit'],

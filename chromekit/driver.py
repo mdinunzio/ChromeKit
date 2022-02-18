@@ -74,7 +74,7 @@ class WebDriver(selenium.webdriver.Chrome):
             element = wdw.until(exp_cond)
             return element
         except TimeoutException:
-            log.debug('TimeoutException: Element not found.')
+            log.info('TimeoutException: Element not found.')
             if fatal:
                 self.quit()
                 sys.exit(1)
