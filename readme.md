@@ -1,10 +1,13 @@
-#ChromeKit
+# ChromeKit
+
 A utility for simplifying the use of Selenium with Chrome.
 
 This package automatically checks and updates ChromeDriver to 
 match your particular version of Chrome.
 
 Additionally, it adds a handful of useful commands to Selenium's API.
+
+Currently this package only works for Windows.
 
 ## Installation
 ```
