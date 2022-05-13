@@ -1,27 +1,28 @@
-"""A simplified WebDriver module.
-
-"""
+"""A simplified WebDriver module."""
 import logging
 import sys
+
 import selenium.webdriver
+import selenium.webdriver.chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
+
 import chromekit.settings
 import chromekit.utils
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WebDriver(selenium.webdriver.Chrome):
     """A tool for interacting with webpages.
 
     Attributes:
-        executable_path (string): The path to the Chromedriver exe.
-        options (ChromeOptions): The webdriver Chrome options.
-        profile (string): The path to the desired user's Chrome profile.
+        executable_path: The path to the Chromedriver exe.
+        options: The webdriver Chrome options.
+        profile: The path to the desired user's Chrome profile.
 
     """
 
@@ -33,16 +34,18 @@ class WebDriver(selenium.webdriver.Chrome):
                 be loaded, allowing for use of stored cookies etc.
 
         """
-        self.executable_path = str(chromekit.settings.PATHS.executable_path)
-        self.options = selenium.webdriver.ChromeOptions()
-        self.profile = str(chromekit.settings.PATHS.profile)
-        self.use_default_profile = use_default_profile
-        chromekit.utils.update_driver()
+        self.executable_path: str = str(
+            chromekit.settings.paths.DRIVER_EXECUTABLE)
+        self.options: selenium.webdriver.chrome = (
+            selenium.webdriver.ChromeOptions())
+        self.profile: str = str(
+            chromekit.settings.paths.CHROME_PROFILE)
+        self.use_default_profile: bool = use_default_profile
+
+        chromekit.utils.download_and_install_chromedriver_if_needed()
 
     def start(self):
-        """Starts the chromedriver.
-
-        """
+        """Starts the chromedriver."""
         if self.use_default_profile:
             self.options.add_argument(f"user-data-dir={self.profile}")
         super().__init__(executable_path=self.executable_path,
@@ -73,11 +76,11 @@ class WebDriver(selenium.webdriver.Chrome):
             exp_cond = ec_type((by_type, criteria))
             element = wdw.until(exp_cond)
             return element
-        except TimeoutException:
-            log.info('TimeoutException: Element not found.')
+        except TimeoutException as timeout_exception:
+            logger.info('TimeoutException: Element not found.')
             if fatal:
-                self.quit()
-                sys.exit(1)
+                raise timeout_exception
+            return None
 
     def jsclick(self, element: selenium.webdriver.remote.webelement.WebElement,
                 fatal: bool = True):
@@ -94,8 +97,8 @@ class WebDriver(selenium.webdriver.Chrome):
         try:
             javascript = 'arguments[0].click();'
             self.execute_script(javascript, element)
-        except Exception as e:
-            log.exception(e)
+        except Exception as exception:
+            logger.exception(exception)
             if fatal:
                 self.quit()
                 sys.exit(1)
