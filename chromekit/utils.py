@@ -9,15 +9,17 @@ import subprocess
 import sys
 from typing import Optional
 import zipfile
+
 from bs4 import BeautifulSoup
 import psutil
 import requests
+
 import chromekit.settings
 
 
 CHROMEDRIVER_URL = r'https://chromedriver.chromium.org'
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_username() -> str:
@@ -35,11 +37,9 @@ def taskkill(image_name: str):
 
 
 def get_chrome_version() -> str:
-    """Returns the version of Chrome on this PC.
-
-    """
+    """Returns the major_version of Chrome on this PC."""
     cmd = r'reg query "HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon" ' \
-          r'/v version'
+          r'/v major_version'
     res = subprocess.run(cmd, capture_output=True, check=True)
     version = res.stdout.decode('utf-8')
     version = version.split(' ')[-1]
@@ -54,16 +54,13 @@ def request_uac(command: str):
 
 
 def fetch_chrome_to_chromedriver_version_map() -> dict:
-    """Returns a dictionary mapping Chrome versions to Chromedriver versions.
-
-    """
-    dl_url = f'{CHROMEDRIVER_URL}/downloads'
-    req = requests.get(dl_url)
+    """Returns a dictionary mapping Chrome versions to Chromedriver versions."""
+    dowload_url = f'{CHROMEDRIVER_URL}/downloads'
+    req = requests.get(dowload_url)
     soup = BeautifulSoup(req.text, 'html.parser')
-    li_list = soup.find_all(
-        lambda x:
-        x.name == 'list_item'
-        and 'If you are using Chrome version' in x.text)
+    li_list = soup.find_all('li')
+    li_list = [x for x in li_list if x.text is not None]
+    li_list = [x for x in li_list if 'you are using Chrome version' in x.text]
 
     def extract_ver(list_item):
         return re.match(r'.* (?P<ver>\d*),.*', list_item.text).group('ver')
@@ -75,122 +72,111 @@ def fetch_chrome_to_chromedriver_version_map() -> dict:
     return ver_map
 
 
-def download_chromedriver_zip(version: str = None, chunk_size: int = 128
+def download_chromedriver_zip(chrome_version: str = None, chunk_size: int = 128
                               ) -> str:
     """Downloads the zip containing the specified Chromedriver version.
 
     Args:
-        version: The version of Chromedriver to download.
-            Defaults to None (automatically enforces compatibility with version
-            of Chrome on system).
+        chrome_version: The version of Chrome for which to download a
+            compatible Chromedriver executable. Defaults to the version
+            of Chrome on this PC.
         chunk_size: The file chunk size for extraction. Defaults to 128.
 
     """
-    log.info('Downloading Chromedriver zip file.')
-    if version is None:
-        version = get_chrome_version().split('.')[0]
-    ver_map = fetch_chrome_to_chromedriver_version_map()
-    if version not in ver_map:
-        raise ValueError(f'Chromedriver for Chrome version {version} '
+    logger.info('Downloading Chromedriver zip file.')
+    if chrome_version is None:
+        chrome_version = get_chrome_version()
+    major_version = chrome_version.split('.')[0]
+    version_map = fetch_chrome_to_chromedriver_version_map()
+    if major_version not in version_map:
+        raise ValueError(f'Chromedriver for Chrome version {chrome_version} '
                          f'not available. Please update Chrome.')
-    base_url = ver_map[version]
+    base_url = version_map[major_version]
     cd_version = base_url.split('path=')[-1].strip().replace('/', '')
-    dl_url = f'https://chromedriver.storage.googleapis.com/'
-    dl_url += f'{cd_version}/chromedriver_win32.zip'
-    zip_path = str(chromekit.settings.PATHS.downloads /
-                   f'chromedriver_win32.zip')
-    req = requests.get(dl_url, stream=True)
+    download_url = 'https://chromedriver.storage.googleapis.com/'
+    download_url += f'{cd_version}/chromedriver_win32.zip'
+    zip_path = str(chromekit.settings.paths.DOWNLOADS /
+                   'chromedriver_win32.zip')
+    req = requests.get(download_url, stream=True)
     with open(zip_path, 'wb') as file:
         for chunk in req.iter_content(chunk_size=chunk_size):
             file.write(chunk)
-    log.info('Finished downloading Chromedriver zip file.')
+    logger.info('Finished downloading Chromedriver zip file.')
     return zip_path
 
 
-def extract_chromedriver_zip_to_appdata(zip_path: str):
+def extract_chromedriver_zip(zip_path: str):
     """Extracts the chromedriver zip file to is appropriate location.
-
-    By default, this is in the AppData/Local/ChromeKit folder.
 
     Args:
         zip_path (string): The path to the zip file containing the
             chromedriver executable.
 
     """
-    log.info('Extracting chromedriver zip: %s', zip_path)
-    if not chromekit.settings.PATHS.chromedriver.parent.exists():
-        log.info('Creating chromedriver parent directory')
-        chromekit.settings.PATHS.chromedriver.parent.mkdir()
+    unzip_path = chromekit.settings.paths.DRIVER_EXECUTABLE.parent
+    logger.info('Extracting chromedriver from %s to %s',
+                zip_path, unzip_path)
+    if not unzip_path.exists():
+        logger.info('Creating chromedriver parent directory (%s)', unzip_path)
+        unzip_path.mkdir()
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(
-            str(chromekit.settings.PATHS.chromedriver.parent))
-    log.info('Finished extracting chromedriver.')
+        zip_ref.extractall(str(unzip_path))
+    logger.info('Finished extracting chromedriver.')
 
 
-def get_chromedriver_version(abridged: bool = True) -> Optional[str]:
-    """Returns the current chromedriver version.
-
-    Args:
-        abridged: Whether or not to abridge the version string.
-            Defaults to True.
-
-    """
-    if not chromekit.settings.PATHS.chromedriver.exists():
-        return
-    cmd = str(chromekit.settings.PATHS.chromedriver) + ' --version'
-    res = subprocess.run(cmd, capture_output=True, check=True)
-    version = res.stdout.decode('utf-8')
-    if not abridged:
-        return version
+def get_chromedriver_version() -> Optional[str]:
+    """Returns the current chromedriver major_version."""
+    logger.debug('Getting chromedriver major_version.')
+    if not chromekit.settings.paths.DRIVER_EXECUTABLE.exists():
+        logger.debug('No chromedriver executable exists.')
+        return None
+    cmd = str(chromekit.settings.paths.DRIVER_EXECUTABLE) + ' --major_version'
+    cmd_result = subprocess.run(cmd, capture_output=True, check=True)
+    version = cmd_result.stdout.decode('utf-8')
     version = version.split(' ')[1]
     version = version.strip()
+    logger.debug('Chromedriver major_version is: %s', version)
     return version
 
 
-def install_chromedriver():
-    """Installs Chromedriver in the appropriate directory from the web.
-
-    """
-    log.info('Setting up Chromedriver.')
-    chrome_ver = get_chrome_version()
-    log.info('Chrome version is %s', chrome_ver)
-    chrome_ver_short = chrome_ver.split('.')[0]
-    zip_path = download_chromedriver_zip(chrome_ver_short)
-    extract_chromedriver_zip_to_appdata(zip_path)
-    log.info('Chromedriver setup complete.')
+def download_and_install_chromedriver():
+    """Installs Chromedriver in the appropriate directory from the web."""
+    logger.info('Downloading and installing up Chromedriver.')
+    chrome_version = get_chrome_version()
+    logger.info('Chrome major_version is %s', chrome_version)
+    zip_path = download_chromedriver_zip(chrome_version)
+    extract_chromedriver_zip(zip_path)
+    logger.info('Chromedriver setup complete.')
 
 
-def update_driver(force: bool = False):
-    """Downloads installs a compatible driver version if necessary.
+def download_and_install_chromedriver_if_needed(force: bool = False):
+    """Downloads and installs a compatible driver major_version if necessary.
 
     Args:
         force: If True, the driver will be reinstalled even if the
             Chrome and Chromedriver versions are already compatible.
-
     """
     if force:
-        log.info('Force-installing Chromedriver')
-        install_chromedriver()
-    driver_ver = get_chromedriver_version(abridged=True)
-    if driver_ver is None:
-        log.info('No Chromedriver detected. Beginning installation.')
-        install_chromedriver()
-    chrome_ver = get_chrome_version()
-    driver_ver_tuple = tuple(int(x) for x in driver_ver.split('.'))
-    chrome_ver_tuple = tuple(int(x) for x in chrome_ver.split('.'))
+        logger.info('Force-installing Chromedriver.')
+        download_and_install_chromedriver()
+    driver_version = get_chromedriver_version()
+    if driver_version is None:
+        logger.info('No Chromedriver detected. Beginning installation.')
+        download_and_install_chromedriver()
+    chrome_version = get_chrome_version()
+    driver_ver_tuple = tuple(int(x) for x in driver_version.split('.'))
+    chrome_ver_tuple = tuple(int(x) for x in chrome_version.split('.'))
     if driver_ver_tuple < chrome_ver_tuple:
-        log.info(
-            'Driver version %s is less than '
-            'Chrome version %s. '
-            'Beginning Chromedriver re-installation.',
-            driver_ver, chrome_ver)
-        install_chromedriver()
+        logger.info('Driver major_version %s is less than '
+                    'Chrome major_version %s. '
+                    'Beginning Chromedriver re-installation.',
+                    driver_version, chrome_version)
+        download_and_install_chromedriver()
     elif driver_ver_tuple > chrome_ver_tuple:
-        log.info(
-            'Driver version %s is greater than '
-            'Chrome version %s. '
-            'No need for driver update.',
-            driver_ver, chrome_ver)
-        return
-    log.info('Chrome version and driver version are equal. '
-             'No need to update.')
+        logger.info('Driver major_version %s is greater than '
+                    'Chrome major_version %s. '
+                    'No need for driver update.',
+                    driver_version, chrome_version)
+    else:
+        logger.info('Chrome major_version and driver major_version are equal. '
+                    'No need to update.')
