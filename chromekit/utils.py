@@ -37,9 +37,9 @@ def taskkill(image_name: str):
 
 
 def get_chrome_version() -> str:
-    """Returns the major_version of Chrome on this PC."""
+    """Returns the version of Chrome on this PC."""
     cmd = r'reg query "HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon" ' \
-          r'/v major_version'
+          r'/v version'
     res = subprocess.run(cmd, capture_output=True, check=True)
     version = res.stdout.decode('utf-8')
     version = version.split(' ')[-1]
@@ -125,17 +125,17 @@ def extract_chromedriver_zip(zip_path: str):
 
 
 def get_chromedriver_version() -> Optional[str]:
-    """Returns the current chromedriver major_version."""
-    logger.debug('Getting chromedriver major_version.')
+    """Returns the current chromedriver version."""
+    logger.debug('Getting chromedriver version.')
     if not chromekit.settings.paths.DRIVER_EXECUTABLE.exists():
         logger.debug('No chromedriver executable exists.')
         return None
-    cmd = str(chromekit.settings.paths.DRIVER_EXECUTABLE) + ' --major_version'
+    cmd = str(chromekit.settings.paths.DRIVER_EXECUTABLE) + ' --version'
     cmd_result = subprocess.run(cmd, capture_output=True, check=True)
     version = cmd_result.stdout.decode('utf-8')
     version = version.split(' ')[1]
     version = version.strip()
-    logger.debug('Chromedriver major_version is: %s', version)
+    logger.debug('Chromedriver version is: %s', version)
     return version
 
 
@@ -143,14 +143,14 @@ def download_and_install_chromedriver():
     """Installs Chromedriver in the appropriate directory from the web."""
     logger.info('Downloading and installing up Chromedriver.')
     chrome_version = get_chrome_version()
-    logger.info('Chrome major_version is %s', chrome_version)
+    logger.info('Chrome version is %s', chrome_version)
     zip_path = download_chromedriver_zip(chrome_version)
     extract_chromedriver_zip(zip_path)
     logger.info('Chromedriver setup complete.')
 
 
 def download_and_install_chromedriver_if_needed(force: bool = False):
-    """Downloads and installs a compatible driver major_version if necessary.
+    """Downloads and installs a compatible driver version if necessary.
 
     Args:
         force: If True, the driver will be reinstalled even if the
@@ -167,16 +167,16 @@ def download_and_install_chromedriver_if_needed(force: bool = False):
     driver_ver_tuple = tuple(int(x) for x in driver_version.split('.'))
     chrome_ver_tuple = tuple(int(x) for x in chrome_version.split('.'))
     if driver_ver_tuple < chrome_ver_tuple:
-        logger.info('Driver major_version %s is less than '
-                    'Chrome major_version %s. '
+        logger.info('Driver version %s is less than '
+                    'Chrome version %s. '
                     'Beginning Chromedriver re-installation.',
                     driver_version, chrome_version)
         download_and_install_chromedriver()
     elif driver_ver_tuple > chrome_ver_tuple:
-        logger.info('Driver major_version %s is greater than '
-                    'Chrome major_version %s. '
+        logger.info('Driver version %s is greater than '
+                    'Chrome version %s. '
                     'No need for driver update.',
                     driver_version, chrome_version)
     else:
-        logger.info('Chrome major_version and driver major_version are equal. '
+        logger.info('Chrome version and driver version are equal. '
                     'No need to update.')
