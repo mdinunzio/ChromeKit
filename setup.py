@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="chromekit",
-    version="2.0.8",
+    version="2.0.9",
     author="Michael DiNunzio",
     author_email="mdinunzio@gmail.com",
     packages=['chromekit', 'chromekit.settings'],
@@ -14,5 +14,5 @@ setup(
         "beautifulsoup4",
         "psutil",
         "selenium",
-        "requests"]
+        "webdriver_manager"]
 )
